@@ -16,13 +16,14 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB 最大上传大小
 
 # Session 配置（支持移动端和跨设备访问）
 app.config['SESSION_COOKIE_NAME'] = 'mindmate_session'  # 自定义 Cookie 名称
-app.config['SESSION_COOKIE_SAMESITE'] = None  # 完全允许跨站
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 改为 Lax 更安全
 app.config['SESSION_COOKIE_SECURE'] = False  # HTTP 环境
-app.config['SESSION_COOKIE_HTTPONLY'] = False  # 允许 JavaScript 访问（方便调试）
-app.config['SESSION_COOKIE_DOMAIN'] = None  # 不限制域名（关键！）
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 XSS 攻击
+app.config['SESSION_COOKIE_DOMAIN'] = None  # 不限制域名
 app.config['SESSION_COOKIE_PATH'] = '/'  # 所有路径
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24小时
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True  # 每次请求刷新
+app.config['SESSION_TYPE'] = 'filesystem'  # 使用文件系统存储 session
 
 # 启用 CORS（完全开放配置）
 CORS(app, 
@@ -55,9 +56,13 @@ def check_token_auth():
     """在每个请求前检查 token 认证"""
     from routes.auth import get_token_from_request, verify_token
     
-    # 跳过公开路由
-    public_routes = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/static', '/test-login', '/test']
+    # 跳过公开路由（添加 /home 到公开路由）
+    public_routes = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/static', '/test-login', '/test', '/home', '/']
     if any(request.path.startswith(route) for route in public_routes):
+        return
+    
+    # 先检查 session（优先级更高）
+    if 'user_id' in session:
         return
     
     # 检查 token
@@ -67,19 +72,15 @@ def check_token_auth():
         if user_id:
             # 将 user_id 设置到 session 中（向后兼容）
             session['user_id'] = user_id
+            session.permanent = True  # 设置为永久 session
             return
-    
-    # 检查 session（向后兼容）
-    if 'user_id' in session:
-        return
     
     # 对于 API 请求，返回 401
     if request.path.startswith('/api/'):
         return jsonify({"success": False, "error": "未授权"}), 401
     
     # 对于页面请求，重定向到登录页
-    if request.path not in ['/', '/login', '/register']:
-        return redirect(url_for('login'))
+    return redirect(url_for('login'))
 
 # 页面路由
 @app.route('/')

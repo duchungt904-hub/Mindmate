@@ -82,6 +82,7 @@ def register():
         
         # 同时设置 session（向后兼容）
         session['user_id'] = user_id
+        session.permanent = True  # 设置为永久 session
         
         result['token'] = token
         return jsonify(result), 201
@@ -113,6 +114,7 @@ def login():
         
         # 同时设置 session（向后兼容）
         session['user_id'] = user_id
+        session.permanent = True  # 设置为永久 session
         
         result['token'] = token
         return jsonify(result), 200
