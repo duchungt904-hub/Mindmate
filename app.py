@@ -35,6 +35,13 @@ CORS(app,
 # 初始化数据库
 db = Database(os.getenv('DATABASE_PATH', 'mindmate.db'))
 
+# 运行数据库迁移（确保表结构是最新的）
+try:
+    from migrate_avatars_table import migrate_avatars_table
+    migrate_avatars_table(os.getenv('DATABASE_PATH', 'mindmate.db'))
+except Exception as e:
+    print(f"数据库迁移警告: {e}")
+
 # 注册蓝图（API 路由）
 app.register_blueprint(auth_bp)
 app.register_blueprint(profile_bp)
