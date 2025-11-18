@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}日历 - MindMate{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-bottom: 80px;">
+    <div class="calendar-header">
+        <button id="prevMonth" class="btn-nav">◀</button>
+        <h1 id="monthYear"></h1>
+        <button id="nextMonth" class="btn-nav">▶</button>
+    </div>
+    
+    <div class="calendar-grid" id="calendarGrid">
+        <!-- 日历将在这里动态生成 -->
+    </div>
+    
+    <div class="mood-selector" id="moodSelector" style="display: none;">
+        <h3>选择心情</h3>
+        <div class="emoji-options">
+            <button class="emoji-btn" data-emoji="😊">😊 开心</button>
+            <button class="emoji-btn" data-emoji="😢">😢 难过</button>
+            <button class="emoji-btn" data-emoji="😌">😌 平静</button>
+            <button class="emoji-btn" data-emoji="😤">😤 生气</button>
+            <button class="emoji-btn" data-emoji="😰">😰 焦虑</button>
+            <button class="emoji-btn" data-emoji="🤔">🤔 思考</button>
+            <button class="emoji-btn" data-emoji="😴">😴 疲惫</button>
+            <button class="emoji-btn" data-emoji="🥳">🥳 兴奋</button>
+        </div>
+        <button id="autoAnalyze" class="btn-secondary">自动分析今日心情</button>
+        <button id="closeSelector" class="btn-close">关闭</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentDate = new Date();
+let selectedDate = null;
+let moodData = {};
+
+// 初始化
+function init() {
+    renderCalendar();
+    loadMonthMoods();
+    
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+        loadMonthMoods();
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+        loadMonthMoods();
+    });
+    
+    document.getElementById('closeSelector').addEventListener('click', () => {
+        document.getElementById('moodSelector').style.display = 'none';
+    });
+    
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const emoji = btn.dataset.emoji;
+            setMood(selectedDate, emoji);
+        });
+    });
+    
+    document.getElementById('autoAnalyze').addEventListener('click', () => {
+        autoAnalyzeMood(selectedDate);
+    });
+}
+
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    document.getElementById('monthYear').textContent = 
+        `${currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    let html = '<div class="weekdays">';
+    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+        html += `<div class="weekday">${day}</div>`;
+    });
+    html += '</div><div class="days">';
+    
+    // 空白日期
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="day empty"></div>';
+    }
+    
+    // 实际日期
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const mood = moodData[dateStr];
+        const isToday = dateStr === new Date().toISOString().split('T')[0];
+        
+        html += `
+            <div class="day ${isToday ? 'today' : ''}" data-date="${dateStr}">
+                <span class="day-number">${day}</span>
+                ${mood ? `<span class="mood-emoji">${mood.mood_emoji}</span>` : ''}
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    
+    document.getElementById('calendarGrid').innerHTML = html;
+    
+    // 添加点击事件
+    document.querySelectorAll('.day:not(.empty)').forEach(dayEl => {
+        dayEl.addEventListener('click', () => {
+            selectedDate = dayEl.dataset.date;
+            document.getElementById('moodSelector').style.display = 'block';
+        });
+    });
+}
+
+async function loadMonthMoods() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    
+    try {
+        const response = await fetch(`/api/mood/month?year=${year}&month=${month}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            moodData = {};
+            data.moods.forEach(m => {
+                moodData[m.date] = m;
+            });
+            renderCalendar();
+        }
+    } catch (error) {
+        console.error('加载心情数据失败:', error);
+    }
+}
+
+async function setMood(date, emoji) {
+    try {
+        const response = await fetch('/api/mood/set', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ date, mood_emoji: emoji })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            moodData[date] = { date, mood_emoji: emoji };
+            renderCalendar();
+            document.getElementById('moodSelector').style.display = 'none';
+        }
+    } catch (error) {
+        alert('设置心情失败，请重试');
+    }
+}
+
+async function autoAnalyzeMood(date) {
+    try {
+        const response = await fetch('/api/mood/auto-analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ date })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            moodData[date] = { date: data.date, mood_emoji: data.mood_emoji };
+            renderCalendar();
+            document.getElementById('moodSelector').style.display = 'none';
+            alert(`自动分析完成！今日心情：${data.mood_emoji}`);
+        } else {
+            alert(data.error || '自动分析失败');
+        }
+    } catch (error) {
+        alert('自动分析失败，请重试');
+    }
+}
+
+init();
+</script>
+{% endblock %}

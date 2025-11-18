@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block title %}聊天 - MindMate{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <div id="avatarInfo" class="avatar-info">
+            <img id="avatarImage" src="" alt="Avatar" class="avatar-header-image">
+            <div>
+                <h2 id="avatarName">Chat with Your Avatar</h2>
+                <p id="avatarPersona" class="avatar-persona-desc"></p>
+            </div>
+            <button class="btn-switch-avatar" onclick="showAvatarSelector()" title="切换 Avatar">
+                🔄
+            </button>
+        </div>
+    </div>
+    
+    <!-- Avatar 选择器 -->
+    <div id="avatarSelector" class="avatar-selector" style="display: none;">
+        <div class="selector-header">
+            <h3>选择 Avatar</h3>
+            <button class="close-btn" onclick="closeAvatarSelector()">✖</button>
+        </div>
+        <div id="avatarList" class="avatar-list">
+            <!-- 动态加载 Avatar 列表 -->
+        </div>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+        <!-- 消息将在这里动态加载 -->
+    </div>
+    
+    <div class="chat-input-container">
+        <form id="chatForm">
+            <input type="text" id="messageInput" placeholder="输入消息..." autocomplete="off" required>
+            <button type="submit" class="send-btn">发送</button>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Avatar 头部样式 */
+.avatar-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
+
+.avatar-header-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.avatar-persona-desc {
+    font-size: 13px;
+    color: #666;
+    margin: 5px 0 0 0;
+}
+
+/* 切换按钮 */
+.btn-switch-avatar {
+    margin-left: auto;
+    background: #f0f4ff;
+    border: 2px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-switch-avatar:hover {
+    background: #667eea;
+    transform: rotate(180deg);
+}
+
+/* Avatar 选择器 */
+.avatar-selector {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-list {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e1e8ed;
+}
+
+.selector-header h3 {
+    margin: 0;
+    color: #667eea;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.avatar-option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.avatar-option:hover {
+    background: #f0f4ff;
+    border-color: #667eea;
+}
+
+.avatar-option.active {
+    background: #f0f4ff;
+    border-color: #667eea;
+}
+
+.avatar-option-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #667eea;
+}
+
+.avatar-option-info h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.avatar-option-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #888;
+}
+
+/* 消息气泡中的头像 */
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.user-message {
+    flex-direction: row-reverse;
+}
+
+/* 额外样式优化 */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: #999;
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// VERSION 3.0 - 多 Avatar 支持
+console.log('Chat JS Version 3.0 - Multi-Avatar Support');
+
+let chatHistory = [];
+let currentAvatar = null;  // 当前选中的 Avatar
+let allAvatars = [];        // 所有 Avatar 列表
+let avatarImageUrl = '/static/images/default-avatar.png';
+let currentAvatarId = null; // 当前 Avatar ID
+
+// 页面加载时初始化
+async function init() {
+    // 从 URL 获取 avatar_id 参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const avatarIdParam = urlParams.get('avatar_id');
+    
+    // 加载所有 Avatar
+    await loadAllAvatars();
+    
+    // 选择默认 Avatar
+    if (avatarIdParam && allAvatars.find(a => a.id == avatarIdParam)) {
+        currentAvatarId = parseInt(avatarIdParam);
+    } else if (allAvatars.length > 0) {
+        currentAvatarId = allAvatars[0].id;
+    } else {
+        // 没有 Avatar，提示创建
+        document.getElementById('avatarInfo').innerHTML = `
+            <div style="text-align: center; width: 100%;">
+                <p style="color: #e74c3c;">⚠️ 请先创建你的 Avatar！</p>
+                <a href="/avatar" class="btn-primary" style="display: inline-block; margin-top: 10px;">去创建</a>
+            </div>
+        `;
+        return;
+    }
+    
+    // 加载当前 Avatar 和聊天记录
+    await loadCurrentAvatar();
+    await loadChatHistory();
+}
+
+// 加载所有 Avatar
+async function loadAllAvatars() {
+    try {
+        const response = await fetch('/api/avatar/list');
+        const data = await response.json();
+        
+        if (data.success) {
+            allAvatars = data.avatars;
+            console.log('加载了', allAvatars.length, '个 Avatar');
+        }
+    } catch (error) {
+        console.error('加载 Avatar 列表失败:', error);
+    }
+}
+
+// 加载当前 Avatar
+async function loadCurrentAvatar() {
+    if (!currentAvatarId) return;
+    
+    try {
+        const response = await fetch(`/api/avatar/${currentAvatarId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            currentAvatar = data.avatar;
+            avatarImageUrl = calculateAvatarImage(currentAvatar);
+            console.log('当前 Avatar:', currentAvatar);
+            console.log('Avatar 图片 URL:', avatarImageUrl);
+            updateAvatarHeader();
+        }
+    } catch (error) {
+        console.error('加载 Avatar 配置失败:', error);
+    }
+}
+
+// 计算 Avatar 头像 URL
+function calculateAvatarImage(avatar) {
+    if (!avatar) {
+        return '/static/images/default-avatar.png';
+    }
+    
+    // 如果是自定义图片且有路径
+    if (avatar.appearance_type === 'custom' && avatar.custom_image_path) {
+        let path = avatar.custom_image_path.trim();
+        
+        if (path.startsWith('http://') || path.startsWith('https://')) {
+            return path;
+        }
+        
+        if (path.startsWith('avatar_images/')) {
+            path = 'static/uploads/' + path;
+        } else if (path.startsWith('uploads/')) {
+            path = 'static/' + path;
+        } else if (!path.startsWith('static/')) {
+            path = 'static/uploads/' + path;
+        }
+        
+        if (!path.startsWith('/')) {
+            path = '/' + path;
+        }
+        
+        return path;
+    }
+    
+    if (avatar.appearance_type === 'q_character') {
+        return '/static/images/q-character-avatar.svg';
+    }
+    
+    if (avatar.appearance_type === 'cute_animal') {
+        return '/static/images/cute-animal-avatar.svg';
+    }
+    
+    return '/static/images/default-avatar.png';
+}
+
+// 更新头部 Avatar 信息
+function updateAvatarHeader() {
+    if (!currentAvatar) return;
+    
+    const personaName = currentAvatar.avatar_name || 'AI 伙伴';
+    const personaDesc = currentAvatar.description || '';
+    
+    const imgElement = document.getElementById('avatarImage');
+    if (imgElement && avatarImageUrl) {
+        imgElement.src = avatarImageUrl;
+    }
+    
+    const nameElement = document.getElementById('avatarName');
+    if (nameElement) {
+        nameElement.textContent = personaName;
+    }
+    
+    const descElement = document.getElementById('avatarPersona');
+    if (descElement) {
+        descElement.textContent = personaDesc;
+    }
+}
+
+// 显示 Avatar 选择器
+function showAvatarSelector() {
+    const selector = document.getElementById('avatarSelector');
+    const listContainer = document.getElementById('avatarList');
+    
+    // 渲染 Avatar 列表
+    listContainer.innerHTML = allAvatars.map(avatar => `
+        <div class="avatar-option ${avatar.id === currentAvatarId ? 'active' : ''}" 
+             onclick="switchAvatar(${avatar.id})">
+            <img src="${calculateAvatarImage(avatar)}" alt="${avatar.avatar_name}" class="avatar-option-image">
+            <div class="avatar-option-info">
+                <h4>${avatar.avatar_name}</h4>
+                <p>${avatar.persona_name}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    selector.style.display = 'flex';
+}
+
+// 关闭 Avatar 选择器
+function closeAvatarSelector() {
+    document.getElementById('avatarSelector').style.display = 'none';
+}
+
+// 切换 Avatar
+async function switchAvatar(avatarId) {
+    if (avatarId === currentAvatarId) {
+        closeAvatarSelector();
+        return;
+    }
+    
+    currentAvatarId = avatarId;
+    await loadCurrentAvatar();
+    await loadChatHistory();
+    closeAvatarSelector();
+    
+    // 更新 URL
+    const newUrl = `/chat?avatar_id=${avatarId}`;
+    window.history.pushState({}, '', newUrl);
+}
+
+// 加载聊天历史
+async function loadChatHistory() {
+    if (!currentAvatarId) return;
+    
+    try {
+        const response = await fetch(`/api/chat/history?avatar_id=${currentAvatarId}&limit=50`);
+        const data = await response.json();
+        
+        if (data.success) {
+            chatHistory = data.history;
+            renderMessages();
+        }
+    } catch (error) {
+        console.error('加载聊天历史失败:', error);
+    }
+}
+            path = '/' + path;
+        }
+        
+        console.log('使用自定义图片:', path);
+        return path;
+    }
+    
+    // 如果是 Q 版头像类型
+    if (avatarConfig.appearance_type === 'q_character') {
+        console.log('使用 Q 版头像');
+        return '/static/images/q-character-avatar.svg';
+    }
+    
+    // 如果是可爱动物类型
+    if (avatarConfig.appearance_type === 'cute_animal') {
+        console.log('使用可爱动物头像');
+        return '/static/images/cute-animal-avatar.svg';
+    }
+    
+    console.log('使用默认图片');
+    return '/static/images/default-avatar.png';
+}
+
+// 更新头部 Avatar 信息
+function updateAvatarHeader() {
+    if (!avatarConfig) return;
+    
+    const personaName = avatarConfig.persona_name || 'AI 伙伴';
+    const personaDesc = avatarConfig.description || '';
+    
+    const imgElement = document.getElementById('avatarImage');
+    if (imgElement && avatarImageUrl) {
+        imgElement.src = avatarImageUrl;
+    }
+    
+    const nameElement = document.getElementById('avatarName');
+    if (nameElement) {
+        nameElement.textContent = personaName;
+    }
+    
+    const descElement = document.getElementById('avatarPersona');
+    if (descElement) {
+        descElement.textContent = personaDesc;
+    }
+}
+
+// 加载聊天历史
+async function loadChatHistory() {
+    try {
+        const response = await fetch('/api/chat/history?limit=50');
+        const data = await response.json();
+        
+        if (data.success) {
+            chatHistory = data.history;
+            renderMessages();
+        }
+    } catch (error) {
+        console.error('加载聊天历史失败:', error);
+    }
+}
+
+function renderMessages() {
+    const container = document.getElementById('chatMessages');
+    
+    container.innerHTML = chatHistory.map(msg => {
+        const isUser = msg.sender === 'user';
+        const time = new Date(msg.timestamp).toLocaleTimeString('zh-CN', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        if (isUser) {
+            // 用户消息：右对齐，不显示头像
+            return `
+                <div class="message user-message">
+                    <div class="message-content">
+                        ${msg.isTyping ? msg.message : `<p>${escapeHtml(msg.message)}</p>`}
+                        ${!msg.isTyping ? `<span class="timestamp">${time}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        } else {
+            // AI 消息：左对齐，先头像后内容
+            return `
+                <div class="message ai-message">
+                    <img src="${avatarImageUrl}" alt="Avatar" class="message-avatar">
+                    <div class="message-content">
+                        ${msg.isTyping ? msg.message : `<p>${escapeHtml(msg.message)}</p>`}
+                        ${!msg.isTyping ? `<span class="timestamp">${time}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+    }).join('');
+    
+    // 滚动到底部
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 100);
+}
+
+// 发送消息
+document.getElementById('chatForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // 清空输入框
+    input.value = '';
+    
+    // 添加用户消息到界面
+    chatHistory.push({
+        sender: 'user',
+        message: message,
+        timestamp: new Date().toISOString()
+    });
+    renderMessages();
+    
+    // 显示加载状态（打字指示器）
+    const loadingMsg = {
+        sender: 'ai',
+        message: '<div class="typing-indicator"><span></span><span></span><span></span></div>',
+        timestamp: new Date().toISOString(),
+        isTyping: true
+    };
+    chatHistory.push(loadingMsg);
+    renderMessages();
+    
+    try {
+        const response = await fetch('/api/chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+        });
+        
+        const data = await response.json();
+        
+        // 移除加载消息
+        chatHistory.pop();
+        
+        if (data.success) {
+            // 添加 AI 回复
+            chatHistory.push({
+                sender: 'ai',
+                message: data.ai_message,
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            // 显示错误
+            chatHistory.push({
+                sender: 'ai',
+                message: '抱歉，我现在无法回复。请稍后再试。',
+                timestamp: new Date().toISOString()
+            });
+            
+            if (data.error && data.error.includes('Avatar')) {
+                alert('请先配置您的 Avatar！');
+                window.location.href = '/avatar';
+            }
+        }
+        
+        renderMessages();
+    } catch (error) {
+        chatHistory.pop();
+        chatHistory.push({
+            sender: 'ai',
+            message: '网络错误，请重试。',
+            timestamp: new Date().toISOString()
+        });
+        renderMessages();
+    }
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 初始化加载 - 先加载 Profile 和 Avatar，再加载聊天历史
+async function init() {
+    await loadUserProfile();   // 加载用户 Profile
+    await loadAvatarConfig();  // 等待 Avatar 配置加载完成
+    await loadChatHistory();   // 然后加载聊天历史
+}
+
+init();
+</script>
+{% endblock %}

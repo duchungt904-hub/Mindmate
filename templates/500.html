@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Server Error{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <h1>500</h1>
+        <h2>服务器错误</h2>
+        <p>抱歉，服务器遇到了一些问题。请稍后再试。</p>
+        <a href="/home" class="btn-primary">返回主页</a>
+    </div>
+</div>
+
+<style>
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.error-content {
+    text-align: center;
+    color: white;
+}
+
+.error-content h1 {
+    font-size: 120px;
+    margin-bottom: 20px;
+}
+
+.error-content h2 {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+.error-content p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.error-content .btn-primary {
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+}
+</style>
+{% endblock %}

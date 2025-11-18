@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}主页 - MindMate{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="hero-section">
+        <h1>Welcome to MindMate</h1>
+        <p class="subtitle">Your Personal AI Companion</p>
+    </div>
+    
+    <div class="features">
+        <div class="feature-card">
+            <span class="feature-icon">💬</span>
+            <h3>Chat</h3>
+            <p>与您的 AI 伙伴聊天，获得支持和陪伴</p>
+            <a href="/chat" class="btn-feature">开始聊天</a>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">📅</span>
+            <h3>Calendar</h3>
+            <p>追踪您的每日心情，了解情绪变化</p>
+            <a href="/calendar" class="btn-feature">查看日历</a>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">🤖</span>
+            <h3>Avatar</h3>
+            <p>自定义您的 AI 伙伴形象和性格</p>
+            <a href="/avatar" class="btn-feature">配置 Avatar</a>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">👤</span>
+            <h3>Profile</h3>
+            <p>管理您的个人资料和偏好设置</p>
+            <a href="/profile" class="btn-feature">编辑资料</a>
+        </div>
+    </div>
+    
+    <div class="quick-stats">
+        <h2>今日概览</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">今日消息</span>
+                <span class="stat-value" id="todayMessages">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">今日心情</span>
+                <span class="stat-value" id="todayMood">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadTodayStats() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 加载今日消息数
+    try {
+        const response = await fetch('/api/chat/history?limit=100');
+        const data = await response.json();
+        
+        if (data.success) {
+            const todayMessages = data.history.filter(msg => 
+                msg.timestamp.startsWith(today) && msg.sender === 'user'
+            ).length;
+            document.getElementById('todayMessages').textContent = todayMessages;
+        }
+    } catch (error) {
+        console.error('加载消息统计失败:', error);
+    }
+    
+    // 加载今日心情
+    try {
+        const response = await fetch(`/api/mood/get?date=${today}`);
+        const data = await response.json();
+        
+        if (data.success && data.mood) {
+            document.getElementById('todayMood').textContent = data.mood.mood_emoji;
+        } else {
+            document.getElementById('todayMood').textContent = '未记录';
+        }
+    } catch (error) {
+        console.error('加载心情统计失败:', error);
+    }
+}
+
+loadTodayStats();
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}个人资料 - MindMate{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-bottom: 80px;">
+    <h1>User Profile</h1>
+    
+    <form id="profileForm">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ profile.name or '' }}" placeholder="请输入你的名字">
+        </div>
+        
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender">
+                <option value="" {% if not profile.gender %}selected{% endif %}>不愿透露</option>
+                <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>男</option>
+                <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>女</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="date_birth">Date of Birth</label>
+            <input type="date" id="date_birth" name="date_birth" value="{{ profile.date_birth or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="goal">Goal / 座右铭</label>
+            <input type="text" id="goal" name="goal" placeholder="To have a happy day~" value="{{ profile.goal or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="self_description">自我描述</label>
+            <textarea id="self_description" name="self_description" rows="4" placeholder="描述一下你自己的性格或身份...">{{ profile.self_description or '' }}</textarea>
+        </div>
+        
+        <button type="submit" class="btn-primary">保存</button>
+        <button type="button" class="btn-secondary" onclick="logout()" style="margin-left: 10px;">登出</button>
+    </form>
+    
+    <div id="message" class="message"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 提交表单
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/api/profile/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('保存成功！', 'success');
+        } else {
+            showMessage(data.error || '保存失败', 'error');
+        }
+    } catch (error) {
+        showMessage('网络错误，请重试', 'error');
+    }
+});
+
+function showMessage(text, type) {
+    const messageEl = document.getElementById('message');
+    messageEl.textContent = text;
+    messageEl.className = 'message ' + type;
+}
+
+// 登出功能
+function logout() {
+    if (confirm('确定要登出吗？')) {
+        fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(() => {
+            // 清除本地存储
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            // 跳转到登录页
+            window.location.href = '/login';
+        });
+    }
+}
+</script>
+{% endblock %}

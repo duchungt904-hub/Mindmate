@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录测试 - MindMate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 16px;
+            font-size: 24px;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        
+        .btn:active {
+            background: #5568d3;
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+        }
+        
+        .btn-secondary:active {
+            background: #38a169;
+        }
+        
+        .info {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .info strong {
+            color: #667eea;
+        }
+        
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .warning {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+        
+        #log {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            padding: 6px;
+            margin-bottom: 4px;
+            border-left: 3px solid #667eea;
+            background: #f7fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🔬 登录测试工具</h1>
+            <p style="color: #666; margin-bottom: 16px;">用于诊断手机登录问题</p>
+        </div>
+        
+        <div class="card">
+            <h2>📊 当前状态</h2>
+            <div class="info">
+                <strong>当前 URL:</strong> <span id="currentUrl"></span>
+            </div>
+            <div class="info">
+                <strong>User Agent:</strong> <span id="userAgent"></span>
+            </div>
+            <div class="info" id="cookieInfo">
+                <strong>Cookie:</strong> <span id="cookieValue">无</span>
+            </div>
+            <div class="info" id="sessionInfo">
+                <strong>Session 状态:</strong> <span id="sessionStatus">检查中...</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🔑 测试登录</h2>
+            <form id="testLoginForm">
+                <div class="form-group">
+                    <label>用户名/邮箱</label>
+                    <input type="text" id="login_id" value="123" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="password" value="123456" required>
+                </div>
+                <button type="submit" class="btn">🚀 测试登录</button>
+                <button type="button" class="btn btn-secondary" onclick="checkSession()">🔍 检查 Session</button>
+                <button type="button" class="btn btn-secondary" onclick="clearAll()">🗑️ 清除所有数据</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>📝 操作日志</h2>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // 显示基本信息
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        
+        function updateCookie() {
+            const cookie = document.cookie;
+            const cookieEl = document.getElementById('cookieValue');
+            if (cookie) {
+                cookieEl.textContent = cookie;
+                document.getElementById('cookieInfo').className = 'info success';
+            } else {
+                cookieEl.textContent = '无';
+                document.getElementById('cookieInfo').className = 'info warning';
+            }
+        }
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.innerHTML = `<strong>[${time}]</strong> ${message}`;
+            logEl.insertBefore(entry, logEl.firstChild);
+        }
+        
+        async function checkSession() {
+            log('正在检查 Session 状态...');
+            
+            try {
+                const response = await fetch('/api/auth/check', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                const statusEl = document.getElementById('sessionStatus');
+                
+                if (data.authenticated) {
+                    statusEl.textContent = `已登录 (用户: ${data.user.username})`;
+                    document.getElementById('sessionInfo').className = 'info success';
+                    log(`✅ Session 有效！用户: ${data.user.username}`, 'success');
+                } else {
+                    statusEl.textContent = '未登录';
+                    document.getElementById('sessionInfo').className = 'info error';
+                    log('❌ 未登录', 'error');
+                }
+                
+                updateCookie();
+            } catch (error) {
+                log(`❌ 检查失败: ${error.message}`, 'error');
+            }
+        }
+        
+        document.getElementById('testLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const login_id = document.getElementById('login_id').value;
+            const password = document.getElementById('password').value;
+            
+            log(`🔄 开始测试登录: ${login_id}`);
+            
+            try {
+                log('📤 发送登录请求...');
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',  // 关键！
+                    body: JSON.stringify({ login_id, password })
+                });
+                
+                log(`📥 收到响应: HTTP ${response.status}`);
+                
+                // 检查响应头
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                    if (key.toLowerCase() === 'set-cookie') {
+                        log(`🍪 Set-Cookie: ${value}`, 'success');
+                    }
+                });
+                
+                const data = await response.json();
+                log(`📦 响应数据: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    log(`✅ 登录成功！用户: ${data.username}`, 'success');
+                    
+                    // 等待一下，然后检查 Cookie
+                    setTimeout(() => {
+                        updateCookie();
+                        checkSession();
+                        log('🎉 登录流程完成，3秒后跳转到主页...');
+                        setTimeout(() => {
+                            window.location.href = '/home';
+                        }, 3000);
+                    }, 500);
+                } else {
+                    log(`❌ 登录失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ 请求失败: ${error.message}`, 'error');
+            }
+        });
+        
+        function clearAll() {
+            if (confirm('确定要清除所有 Cookie 和缓存吗？')) {
+                // 清除所有 Cookie
+                document.cookie.split(";").forEach(function(c) {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+                
+                // 清除 localStorage
+                localStorage.clear();
+                
+                // 清除 sessionStorage
+                sessionStorage.clear();
+                
+                log('🗑️ 已清除所有本地数据', 'success');
+                updateCookie();
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        }
+        
+        // 页面加载时检查 Session
+        updateCookie();
+        checkSession();
+        log('📱 测试页面已加载');
+    </script>
+</body>
+</html>

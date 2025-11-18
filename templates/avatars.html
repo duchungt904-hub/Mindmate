@@ -1,0 +1,704 @@
+{% extends "base.html" %}
+
+{% block title %}My Avatars - MindMate{% endblock %}
+
+{% block content %}
+<div class="page-container avatars-page">
+    <div class="page-header">
+        <h1>My AI Avatars</h1>
+        <p class="subtitle">管理你的 AI 伙伴</p>
+    </div>
+
+    <!-- Avatar 列表 -->
+    <div id="avatarsList" class="avatars-grid">
+        <!-- 动态加载 Avatar 卡片 -->
+    </div>
+
+    <!-- 创建新 Avatar 按钮 -->
+    <button class="btn-create-avatar" onclick="showCreateModal()">
+        <span class="icon">➕</span>
+        <span>Create New Avatar</span>
+    </button>
+
+    <!-- 创建/编辑 Avatar 模态框 -->
+    <div id="avatarModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Avatar</h2>
+                <button class="close-btn" onclick="closeModal()">✖</button>
+            </div>
+            
+            <form id="avatarForm" enctype="multipart/form-data">
+                <input type="hidden" id="editAvatarId" value="">
+                
+                <!-- Avatar 名称 -->
+                <div class="form-group">
+                    <label for="avatarName">Avatar Name *</label>
+                    <input type="text" id="avatarName" name="avatar_name" placeholder="给你的 AI 伙伴起个名字" required>
+                </div>
+
+                <!-- 外观类型 -->
+                <div class="form-group">
+                    <label>Appearance Type *</label>
+                    <div class="appearance-options">
+                        <label class="radio-card">
+                            <input type="radio" name="appearance_type" value="q_character" required>
+                            <div class="card-content">
+                                <div class="preview-icon">🎨</div>
+                                <span>Q Version</span>
+                                <small>可爱 Q 版人物</small>
+                            </div>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="appearance_type" value="cute_animal" required>
+                            <div class="card-content">
+                                <div class="preview-icon">🐾</div>
+                                <span>Cute Animal</span>
+                                <small>可爱动物形象</small>
+                            </div>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="appearance_type" value="custom" required>
+                            <div class="card-content">
+                                <div class="preview-icon">🖼️</div>
+                                <span>Custom</span>
+                                <small>自定义图片</small>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 自定义图片上传 -->
+                <div class="form-group" id="customImageGroup" style="display: none;">
+                    <label for="customImage">Upload Custom Image</label>
+                    <input type="file" id="customImage" name="custom_image" accept="image/*">
+                    <small>支持 PNG, JPG, GIF, WebP 等格式</small>
+                </div>
+
+                <!-- 性格类型 -->
+                <div class="form-group">
+                    <label for="personaSelect">Personality *</label>
+                    <select id="personaSelect" name="persona_id" required>
+                        <option value="">-- 选择性格 --</option>
+                    </select>
+                </div>
+
+                <!-- 自定义性格描述 -->
+                <div class="form-group" id="customPersonaGroup" style="display: none;">
+                    <label for="customPersona">Custom Personality Description</label>
+                    <textarea id="customPersona" name="custom_persona" rows="4" 
+                              placeholder="描述你希望 AI 伙伴的性格和说话风格..."></textarea>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Avatar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Avatar 页面样式 */
+.avatars-page {
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #888;
+    font-size: 14px;
+}
+
+/* Avatar 网格 */
+.avatars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 80px;
+}
+
+/* Avatar 卡片 */
+.avatar-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    position: relative;
+}
+
+.avatar-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+}
+
+.avatar-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.avatar-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #667eea;
+}
+
+.avatar-info h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.avatar-info .persona-tag {
+    display: inline-block;
+    background: #f0f4ff;
+    color: #667eea;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.avatar-description {
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.avatar-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.avatar-actions button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-chat {
+    background: #667eea;
+    color: white;
+}
+
+.btn-chat:hover {
+    background: #764ba2;
+}
+
+.btn-edit {
+    background: #f0f4ff;
+    color: #667eea;
+}
+
+.btn-edit:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btn-delete {
+    background: #ffe0e0;
+    color: #e74c3c;
+}
+
+.btn-delete:hover {
+    background: #e74c3c;
+    color: white;
+}
+
+/* 创建按钮 */
+.btn-create-avatar {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 15px 30px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+    z-index: 100;
+}
+
+.btn-create-avatar:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+}
+
+/* 模态框 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #667eea;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group small {
+    color: #888;
+    font-size: 12px;
+}
+
+/* 外观选项 */
+.appearance-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.radio-card {
+    position: relative;
+    cursor: pointer;
+}
+
+.radio-card input[type="radio"] {
+    display: none;
+}
+
+.radio-card .card-content {
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    padding: 15px 10px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.radio-card .preview-icon {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+.radio-card span {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.radio-card small {
+    display: block;
+    font-size: 11px;
+    color: #888;
+}
+
+.radio-card input:checked + .card-content {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+/* 表单按钮 */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.form-actions button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f0f4ff;
+    color: #667eea;
+}
+
+.btn-secondary:hover {
+    background: #e1e8ed;
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+
+.empty-state .icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #666;
+    margin-bottom: 10px;
+}
+</style>
+
+<script>
+let personas = [];
+let avatars = [];
+let editingAvatarId = null;
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadPersonas();
+    await loadAvatars();
+    setupEventListeners();
+});
+
+// 加载所有 Persona
+async function loadPersonas() {
+    try {
+        const response = await fetch('/api/avatar/personas');
+        const data = await response.json();
+        
+        if (data.success) {
+            personas = data.personas;
+            populatePersonaSelect();
+        }
+    } catch (error) {
+        console.error('加载 Persona 失败:', error);
+    }
+}
+
+// 填充 Persona 下拉框
+function populatePersonaSelect() {
+    const select = document.getElementById('personaSelect');
+    select.innerHTML = '<option value="">-- 选择性格 --</option>';
+    
+    personas.forEach(persona => {
+        const option = document.createElement('option');
+        option.value = persona.id;
+        option.textContent = `${persona.name} - ${persona.description}`;
+        select.appendChild(option);
+    });
+}
+
+// 加载所有 Avatar
+async function loadAvatars() {
+    try {
+        const response = await fetch('/api/avatar/list');
+        const data = await response.json();
+        
+        if (data.success) {
+            avatars = data.avatars;
+            renderAvatars();
+        }
+    } catch (error) {
+        console.error('加载 Avatar 列表失败:', error);
+    }
+}
+
+// 渲染 Avatar 列表
+function renderAvatars() {
+    const container = document.getElementById('avatarsList');
+    
+    if (avatars.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">🤖</div>
+                <h3>还没有 Avatar</h3>
+                <p>点击右下角按钮创建你的第一个 AI 伙伴吧！</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = avatars.map(avatar => `
+        <div class="avatar-card" data-id="${avatar.id}">
+            <div class="avatar-card-header">
+                <img src="${getAvatarImage(avatar)}" alt="${avatar.avatar_name}" class="avatar-image">
+                <div class="avatar-info">
+                    <h3>${avatar.avatar_name}</h3>
+                    <span class="persona-tag">${avatar.persona_name}</span>
+                </div>
+            </div>
+            <div class="avatar-description">
+                ${avatar.description || '这是我的 AI 伙伴'}
+            </div>
+            <div class="avatar-actions">
+                <button class="btn-chat" onclick="chatWithAvatar(${avatar.id})">💬 Chat</button>
+                <button class="btn-edit" onclick="editAvatar(${avatar.id})">✏️ Edit</button>
+                <button class="btn-delete" onclick="deleteAvatar(${avatar.id})">🗑️ Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 获取 Avatar 图片 URL
+function getAvatarImage(avatar) {
+    if (avatar.appearance_type === 'custom' && avatar.custom_image_path) {
+        let path = avatar.custom_image_path.trim();
+        if (path.startsWith('avatar_images/')) {
+            path = 'static/uploads/' + path;
+        } else if (!path.startsWith('static/')) {
+            path = 'static/uploads/' + path;
+        }
+        if (!path.startsWith('/')) {
+            path = '/' + path;
+        }
+        return path;
+    } else if (avatar.appearance_type === 'q_character') {
+        return '/static/images/q-character-avatar.svg';
+    } else if (avatar.appearance_type === 'cute_animal') {
+        return '/static/images/cute-animal-avatar.svg';
+    }
+    return '/static/images/default-avatar.png';
+}
+
+// 显示创建模态框
+function showCreateModal() {
+    editingAvatarId = null;
+    document.getElementById('modalTitle').textContent = 'Create New Avatar';
+    document.getElementById('avatarForm').reset();
+    document.getElementById('editAvatarId').value = '';
+    document.getElementById('avatarModal').style.display = 'flex';
+}
+
+// 关闭模态框
+function closeModal() {
+    document.getElementById('avatarModal').style.display = 'none';
+}
+
+// 编辑 Avatar
+function editAvatar(avatarId) {
+    const avatar = avatars.find(a => a.id === avatarId);
+    if (!avatar) return;
+    
+    editingAvatarId = avatarId;
+    document.getElementById('modalTitle').textContent = 'Edit Avatar';
+    document.getElementById('editAvatarId').value = avatarId;
+    document.getElementById('avatarName').value = avatar.avatar_name;
+    document.querySelector(`input[name="appearance_type"][value="${avatar.appearance_type}"]`).checked = true;
+    document.getElementById('personaSelect').value = avatar.persona_id;
+    
+    if (avatar.custom_persona) {
+        document.getElementById('customPersona').value = avatar.custom_persona;
+    }
+    
+    // 触发外观类型变化事件
+    updateAppearanceVisibility();
+    updatePersonaVisibility();
+    
+    document.getElementById('avatarModal').style.display = 'flex';
+}
+
+// 删除 Avatar
+async function deleteAvatar(avatarId) {
+    if (!confirm('确定要删除这个 Avatar 吗？相关的聊天记录也会被删除。')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/avatar/${avatarId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Avatar 已删除！');
+            await loadAvatars();
+        } else {
+            alert('删除失败: ' + data.error);
+        }
+    } catch (error) {
+        console.error('删除 Avatar 失败:', error);
+        alert('删除失败，请重试');
+    }
+}
+
+// 与 Avatar 聊天
+function chatWithAvatar(avatarId) {
+    window.location.href = `/chat?avatar_id=${avatarId}`;
+}
+
+// 设置事件监听器
+function setupEventListeners() {
+    // 外观类型变化
+    document.querySelectorAll('input[name="appearance_type"]').forEach(radio => {
+        radio.addEventListener('change', updateAppearanceVisibility);
+    });
+    
+    // Persona 变化
+    document.getElementById('personaSelect').addEventListener('change', updatePersonaVisibility);
+    
+    // 表单提交
+    document.getElementById('avatarForm').addEventListener('submit', handleFormSubmit);
+}
+
+// 更新外观类型可见性
+function updateAppearanceVisibility() {
+    const selectedType = document.querySelector('input[name="appearance_type"]:checked')?.value;
+    const customImageGroup = document.getElementById('customImageGroup');
+    
+    if (selectedType === 'custom') {
+        customImageGroup.style.display = 'block';
+    } else {
+        customImageGroup.style.display = 'none';
+    }
+}
+
+// 更新性格描述可见性
+function updatePersonaVisibility() {
+    const selectedPersona = document.getElementById('personaSelect').value;
+    const customPersonaGroup = document.getElementById('customPersonaGroup');
+    
+    if (selectedPersona === '5') {  // User-defined
+        customPersonaGroup.style.display = 'block';
+    } else {
+        customPersonaGroup.style.display = 'none';
+    }
+}
+
+// 处理表单提交
+async function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const avatarId = document.getElementById('editAvatarId').value;
+    
+    try {
+        let url, method;
+        if (avatarId) {
+            // 更新
+            url = `/api/avatar/${avatarId}`;
+            method = 'POST';
+        } else {
+            // 创建
+            url = '/api/avatar/create';
+            method = 'POST';
+        }
+        
+        const response = await fetch(url, {
+            method: method,
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(avatarId ? 'Avatar 已更新！' : 'Avatar 已创建！');
+            closeModal();
+            await loadAvatars();
+        } else {
+            alert('操作失败: ' + data.error);
+        }
+    } catch (error) {
+        console.error('保存 Avatar 失败:', error);
+        alert('保存失败，请重试');
+    }
+}
+
+// 点击模态框外部关闭
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('avatarModal');
+    if (e.target === modal) {
+        closeModal();
+    }
+});
+</script>
+{% endblock %}

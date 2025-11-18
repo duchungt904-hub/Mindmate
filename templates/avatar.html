@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}选择 Avatar - MindMate{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-bottom: 80px;">
+    <h1>Choose Your Avatar</h1>
+    
+    <form id="avatarForm" enctype="multipart/form-data">
+        <div class="section">
+            <h2>形象外观</h2>
+            
+            <div class="appearance-options">
+                <label class="appearance-option">
+                    <input type="radio" name="appearance_type" value="cute_animal" required>
+                    <div class="option-card">
+                        <span class="icon">🐱</span>
+                        <span class="label">可爱动物</span>
+                    </div>
+                </label>
+                
+                <label class="appearance-option">
+                    <input type="radio" name="appearance_type" value="q_character" required>
+                    <div class="option-card">
+                        <span class="icon">👧</span>
+                        <span class="label">Q版人物</span>
+                    </div>
+                </label>
+                
+                <label class="appearance-option">
+                    <input type="radio" name="appearance_type" value="custom" required>
+                    <div class="option-card">
+                        <span class="icon">📷</span>
+                        <span class="label">自定义照片</span>
+                    </div>
+                </label>
+            </div>
+            
+            <div id="customImageUpload" class="form-group" style="display: none;">
+                <label>上传 Avatar 头像（你的 AI 伙伴的形象）</label>
+                <div class="avatar-upload">
+                    <img id="avatarPreview" src="/static/images/default-avatar.png" alt="Avatar Preview" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin: 10px 0; border: 3px solid #667eea;">
+                    <input type="file" id="custom_image" name="custom_image" accept="image/*">
+                    <label for="custom_image" class="upload-btn">选择 Avatar 头像</label>
+                </div>
+                <p style="font-size: 12px; color: #999; margin-top: 10px;">这是你的 AI 伙伴的头像，不是你自己的头像</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>形象内核 (Persona)</h2>
+            
+            <div id="personasList" class="persona-options">
+                <!-- 动态加载 Personas -->
+            </div>
+            
+            <div id="customPersonaInput" class="form-group" style="display: none;">
+                <label for="custom_persona">自定义性格描述</label>
+                <textarea id="custom_persona" name="custom_persona" rows="4" placeholder="描述你希望 Avatar 拥有的性格和说话方式..."></textarea>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn-primary">Confirm Selection</button>
+    </form>
+    
+    <div id="message" class="message"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let personas = [];
+
+// 加载 Personas
+async function loadPersonas() {
+    try {
+        const response = await fetch('/api/avatar/personas');
+        const data = await response.json();
+        
+        if (data.success) {
+            personas = data.personas;
+            renderPersonas();
+        }
+    } catch (error) {
+        console.error('加载 Personas 失败:', error);
+    }
+}
+
+function renderPersonas() {
+    const container = document.getElementById('personasList');
+    container.innerHTML = personas.map(p => `
+        <label class="persona-option">
+            <input type="radio" name="persona_id" value="${p.id}" required>
+            <div class="option-card">
+                <h3>${p.name}</h3>
+                <p>${p.description}</p>
+            </div>
+        </label>
+    `).join('');
+    
+    // 监听 Persona 选择
+    document.querySelectorAll('input[name="persona_id"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const personaId = parseInt(e.target.value);
+            const isUserDefined = personas.find(p => p.id === personaId && p.name === 'User-defined');
+            document.getElementById('customPersonaInput').style.display = isUserDefined ? 'block' : 'none';
+        });
+    });
+}
+
+// 监听外观类型选择
+document.querySelectorAll('input[name="appearance_type"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        const uploadSection = document.getElementById('customImageUpload');
+        uploadSection.style.display = e.target.value === 'custom' ? 'block' : 'none';
+    });
+});
+
+// Avatar 头像预览
+document.getElementById('custom_image').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('avatarPreview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// 提交表单
+document.getElementById('avatarForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '保存中...';
+    submitBtn.disabled = true;
+    
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/api/avatar/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('✅ Avatar 配置成功！正在跳转...', 'success');
+            setTimeout(() => {
+                window.location.href = '/chat';
+            }, 1500);
+        } else {
+            showMessage('❌ ' + (data.error || '配置失败'), 'error');
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        showMessage('❌ 网络错误，请重试', 'error');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+});
+
+function showMessage(text, type) {
+    const messageEl = document.getElementById('message');
+    messageEl.textContent = text;
+    messageEl.className = 'message ' + type;
+}
+
+loadPersonas();
+</script>
+{% endblock %}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMate 测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        h1 { font-size: 48px; margin-bottom: 20px; }
+        p { font-size: 24px; }
+        .info { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px auto; max-width: 600px; }
+    </style>
+</head>
+<body>
+    <h1>✅ 连接成功！</h1>
+    <p>MindMate 应用正在运行</p>
+    <div class="info">
+        <p><strong>时间：</strong><span id="time"></span></p>
+        <p><strong>设备：</strong><span id="device"></span></p>
+    </div>
+    <p><a href="/login" style="color: white; font-size: 20px;">👉 点击这里登录</a></p>
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleString();
+        document.getElementById('device').textContent = navigator.userAgent.includes('Mobile') ? '手机' : '电脑';
+    </script>
+</body>
+</html>

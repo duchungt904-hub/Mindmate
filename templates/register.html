@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - MindMate{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Register</h1>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn-primary">Register</button>
+            
+            <div class="auth-links">
+                <p>Already have an account? <a href="/login">Log In</a></p>
+            </div>
+        </form>
+        <div id="message" class="message"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // 存储 token 到 localStorage
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('user_id', data.user_id);
+            localStorage.setItem('username', data.username);
+            
+            showMessage('注册成功！正在跳转...', 'success');
+            setTimeout(() => {
+                window.location.href = '/profile';
+            }, 1000);
+        } else {
+            showMessage(data.error || '注册失败', 'error');
+        }
+    } catch (error) {
+        showMessage('网络错误，请重试', 'error');
+    }
+});
+
+function showMessage(text, type) {
+    const messageEl = document.getElementById('message');
+    messageEl.textContent = text;
+    messageEl.className = 'message ' + type;
+}
+</script>
+{% endblock %}
