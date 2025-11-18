@@ -76,8 +76,15 @@ def create_avatar():
     if 'custom_image' in request.files:
         image_file = request.files['custom_image']
         if image_file and image_file.filename:
-            upload_folder = os.path.join('static', 'uploads', 'avatar_images')
-            custom_image_path = save_uploaded_file(image_file, upload_folder, f'avatar_{user_id}')
+            try:
+                upload_folder = os.path.join('static', 'uploads', 'avatar_images')
+                custom_image_path = save_uploaded_file(image_file, upload_folder, f'avatar_{user_id}')
+            except Exception as e:
+                print(f"文件上传失败: {e}")
+                # 在 Render 等云平台上，文件上传可能失败，但不影响 Avatar 创建
+                # 如果是自定义类型但上传失败，回退到默认头像
+                if appearance_type == 'custom':
+                    appearance_type = 'q_character'  # 回退到默认类型
     
     result = avatar_model.create_avatar(
         user_id,
@@ -107,8 +114,12 @@ def update_avatar(avatar_id):
     if 'custom_image' in request.files:
         image_file = request.files['custom_image']
         if image_file and image_file.filename:
-            upload_folder = os.path.join('static', 'uploads', 'avatar_images')
-            custom_image_path = save_uploaded_file(image_file, upload_folder, f'avatar_{avatar_id}')
+            try:
+                upload_folder = os.path.join('static', 'uploads', 'avatar_images')
+                custom_image_path = save_uploaded_file(image_file, upload_folder, f'avatar_{avatar_id}')
+            except Exception as e:
+                print(f"文件上传失败: {e}")
+                # 上传失败不影响更新
     
     result = avatar_model.update_avatar(
         avatar_id,
