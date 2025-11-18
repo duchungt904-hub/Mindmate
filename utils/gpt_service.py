@@ -8,11 +8,15 @@ class GPTService:
     def __init__(self):
         api_key = os.getenv('OPENAI_API_KEY')
         
+        print(f"[DEBUG] OPENAI_API_KEY 已加载: {api_key[:10]}..." if api_key else "[ERROR] OPENAI_API_KEY 未找到")
+        
         if not api_key or api_key == 'your_openai_api_key_here' or 'DEMO' in api_key:
             print("警告：未配置有效的 OPENAI_API_KEY，请在 .env 文件中配置")
         
         # 创建 OpenAI 客户端，支持自定义 base_url
         base_url = os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')
+        print(f"[DEBUG] OPENAI_BASE_URL: {base_url}")
+        
         self.client = OpenAI(
             api_key=api_key,
             base_url=base_url
@@ -21,10 +25,10 @@ class GPTService:
         # 根据 base_url 自动选择模型
         if 'deepseek' in base_url.lower():
             self.model = "deepseek-chat"  # DeepSeek 模型
-            print(f"使用 DeepSeek 模型: {self.model}")
+            print(f"[INFO] 使用 DeepSeek 模型: {self.model}")
         else:
             self.model = "gpt-3.5-turbo"  # OpenAI 模型
-            print(f"使用 OpenAI 模型: {self.model}")
+            print(f"[INFO] 使用 OpenAI 模型: {self.model}")
     
     def generate_response(self, user_message, chat_history, system_prompt, user_profile=None):
         """
@@ -88,11 +92,12 @@ class GPTService:
             }
         except Exception as e:
             error_msg = str(e)
-            print(f"GPT API 调用失败: {error_msg}")
+            print(f"[ERROR] GPT API 调用失败: {error_msg}")
+            print(f"[DEBUG] 完整错误信息: {repr(e)}")
             
             # 提供更友好的错误提示
-            if "api_key" in error_msg.lower() or "authentication" in error_msg.lower():
-                user_msg = "API 密钥无效，请检查配置"
+            if "api_key" in error_msg.lower() or "authentication" in error_msg.lower() or "401" in error_msg:
+                user_msg = f"API 密钥无效，请检查配置\n错误详情: {error_msg}"
             elif "rate_limit" in error_msg.lower():
                 user_msg = "API 调用次数限制，请稍后再试"
             elif "model" in error_msg.lower():
@@ -100,7 +105,7 @@ class GPTService:
             elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
                 user_msg = "网络连接失败，请检查网络或稍后重试"
             else:
-                user_msg = "抱歉，我现在无法回复。"
+                user_msg = f"抱歉，我现在无法回复。\n错误: {error_msg}"
             
             return {
                 "success": False,
