@@ -67,8 +67,12 @@ def create_avatar():
     persona_id = request.form.get('persona_id')
     custom_persona = request.form.get('custom_persona')
     
+    print(f"[DEBUG] 创建 Avatar: user_id={user_id}, avatar_name={avatar_name}, appearance_type={appearance_type}, persona_id={persona_id}")
+    
     if not avatar_name or not appearance_type or not persona_id:
-        return jsonify({"success": False, "error": "缺少必填字段"}), 400
+        error_msg = f"缺少必填字段: avatar_name={avatar_name}, appearance_type={appearance_type}, persona_id={persona_id}"
+        print(f"[ERROR] {error_msg}")
+        return jsonify({"success": False, "error": error_msg}), 400
     
     custom_image_path = None
     
@@ -79,23 +83,32 @@ def create_avatar():
             try:
                 upload_folder = os.path.join('static', 'uploads', 'avatar_images')
                 custom_image_path = save_uploaded_file(image_file, upload_folder, f'avatar_{user_id}')
+                print(f"[DEBUG] 文件上传成功: {custom_image_path}")
             except Exception as e:
-                print(f"文件上传失败: {e}")
+                print(f"[WARNING] 文件上传失败: {e}")
                 # 在 Render 等云平台上，文件上传可能失败，但不影响 Avatar 创建
                 # 如果是自定义类型但上传失败，回退到默认头像
                 if appearance_type == 'custom':
                     appearance_type = 'q_character'  # 回退到默认类型
+                    print(f"[INFO] 回退到默认头像类型: q_character")
     
-    result = avatar_model.create_avatar(
-        user_id,
-        avatar_name,
-        appearance_type,
-        custom_image_path,
-        int(persona_id),
-        custom_persona
-    )
-    
-    return jsonify(result), 200
+    try:
+        result = avatar_model.create_avatar(
+            user_id,
+            avatar_name,
+            appearance_type,
+            custom_image_path,
+            int(persona_id),
+            custom_persona
+        )
+        print(f"[DEBUG] Avatar 创建结果: {result}")
+        return jsonify(result), 200
+    except Exception as e:
+        error_msg = f"创建 Avatar 失败: {str(e)}"
+        print(f"[ERROR] {error_msg}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": error_msg}), 500
 
 @avatar_bp.route('/<int:avatar_id>', methods=['PUT', 'POST'])
 @login_required
