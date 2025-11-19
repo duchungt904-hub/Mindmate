@@ -58,16 +58,7 @@ window.logout = async function() {
     window.location.href = '/login';
 };
 
-// 页面加载时检查认证
+// 页面加载时的初始化（不再进行冗余的认证检查，后端中间件已处理）
 document.addEventListener('DOMContentLoaded', async () => {
-    const publicPages = ['/login', '/register', '/', '/test-login'];
-    const currentPage = window.location.pathname;
-    
-    if (!publicPages.includes(currentPage)) {
-        const isAuthenticated = await checkAuth();
-        
-        if (!isAuthenticated) {
-            window.location.href = '/login';
-        }
-    }
+    console.log('页面已加载，用户已通过认证');
 });
