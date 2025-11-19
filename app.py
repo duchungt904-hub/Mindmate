@@ -56,10 +56,14 @@ def check_token_auth():
     """在每个请求前检查 token 认证"""
     from routes.auth import get_token_from_request, verify_token
     
-    # 跳过公开路由（添加 /home 到公开路由）
-    public_routes = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/static', '/test-login', '/test', '/home', '/']
+    # 跳过公开路由（不包括需要认证的页面）
+    public_routes = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/static', '/test-login', '/test', '/']
     if any(request.path.startswith(route) for route in public_routes):
-        return
+        # 但 / 需要特殊处理，不能直接跳过
+        if request.path == '/':
+            pass  # 让 index() 函数自己处理重定向
+        else:
+            return
     
     # 先检查 session（优先级更高）
     if 'user_id' in session:

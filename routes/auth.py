@@ -154,3 +154,46 @@ def check_auth():
             return jsonify({"authenticated": True, "user": user}), 200
     
     return jsonify({"authenticated": False}), 200
+
+@auth_bp.route('/stats', methods=['GET'])
+def get_user_stats():
+    """获取用户统计信息（仅管理员或测试使用）"""
+    from database import db_manager
+    
+    try:
+        conn = db_manager.get_connection()
+        cursor = conn.cursor()
+        
+        # 获取总用户数
+        cursor.execute("SELECT COUNT(*) FROM Users")
+        total_users = cursor.fetchone()[0]
+        
+        # 获取最近注册的用户（最多10个）
+        cursor.execute("""
+            SELECT id, username, created_at 
+            FROM Users 
+            ORDER BY created_at DESC 
+            LIMIT 10
+        """)
+        recent_users = []
+        for row in cursor.fetchall():
+            recent_users.append({
+                'id': row[0],
+                'username': row[1],
+                'created_at': row[2]
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "total_users": total_users,
+            "recent_users": recent_users
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] 获取用户统计失败: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
