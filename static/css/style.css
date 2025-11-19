@@ -5,11 +5,25 @@
     box-sizing: border-box;
 }
 
+/* 新配色方案 - 柔和专业 */
+:root {
+    --primary-mint: #B8E6D5;      /* 薄荷绿 */
+    --primary-peach: #FFD4C4;     /* 蜜桃粉 */
+    --primary-cream: #FFF8E7;     /* 米黄色 */
+    --accent-green: #8BD3BD;      /* 深一点的绿 */
+    --accent-coral: #FFB8A0;      /* 珊瑚粉 */
+    --text-dark: #2C3E3C;         /* 深绿色文字 */
+    --text-medium: #5A6D6B;       /* 中灰绿 */
+    --text-light: #8B9D9B;        /* 浅灰 */
+    --background-white: #FFFFFF;
+    --border-light: #E8F0EE;      /* 浅边框 */
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-mint) 0%, var(--primary-peach) 50%, var(--primary-cream) 100%);
     min-height: 100vh;
-    color: #333;
+    color: var(--text-dark);
 }
 
 #app {
@@ -46,7 +60,7 @@ body {
 .auth-card h1 {
     text-align: center;
     margin-bottom: 30px;
-    color: #667eea;
+    color: var(--text-dark);
 }
 
 /* 表单样式 */
@@ -58,7 +72,7 @@ body {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #555;
+    color: var(--text-medium);
 }
 
 .form-group input[type="text"],
@@ -67,7 +81,7 @@ body {
 .form-group textarea {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e1e8ed;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     font-size: 14px;
     transition: border-color 0.3s;
@@ -76,7 +90,7 @@ body {
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--accent-green);
 }
 
 .form-group textarea {
@@ -88,18 +102,19 @@ body {
 .btn-primary {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-coral) 100%);
+    color: var(--text-dark);
     border: none;
     border-radius: 8px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 211, 189, 0.3);
 }
 
 .btn-secondary {
@@ -128,8 +143,9 @@ body {
 }
 
 .auth-links a {
-    color: #667eea;
+    color: var(--accent-green);
     text-decoration: none;
+    font-weight: 500;
 }
 
 .auth-links a:hover {
@@ -172,7 +188,7 @@ body {
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 15px;
-    border: 3px solid #667eea;
+    border: 3px solid var(--accent-green);
 }
 
 .avatar-upload input[type="file"] {
@@ -182,11 +198,12 @@ body {
 .upload-btn {
     display: inline-block;
     padding: 8px 20px;
-    background: #667eea;
-    color: white;
+    background: var(--accent-green);
+    color: var(--text-dark);
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 600;
 }
 
 /* Avatar 选择 */
@@ -196,7 +213,7 @@ body {
 
 .section h2 {
     margin-bottom: 15px;
-    color: #667eea;
+    color: var(--text-dark);
 }
 
 .appearance-options,
@@ -221,8 +238,8 @@ body {
 
 .appearance-option input:checked + .option-card,
 .persona-option input:checked + .option-card {
-    border-color: #667eea;
-    background: #f0f4ff;
+    border-color: var(--accent-green);
+    background: rgba(184, 230, 213, 0.15);
 }
 
 .option-card .icon {
@@ -252,8 +269,8 @@ body {
 
 .chat-header {
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-coral) 100%);
+    color: var(--text-dark);
     flex-shrink: 0;
 }
 
@@ -296,8 +313,8 @@ body {
 }
 
 .user-message .message-content {
-    background: #667eea;
-    color: white;
+    background: var(--accent-green);
+    color: var(--text-dark);
 }
 
 .ai-message .message-content {
@@ -329,11 +346,12 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-coral) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    color: var(--text-dark);
 }
 
 .chat-input-container {
@@ -362,13 +380,13 @@ body {
 }
 
 .chat-input-container input:focus {
-    border-color: #667eea;
+    border-color: var(--accent-green);
 }
 
 .send-btn {
     padding: 12px 24px;
-    background: #667eea;
-    color: white;
+    background: var(--accent-green);
+    color: var(--text-dark);
     border: none;
     border-radius: 25px;
     cursor: pointer;
@@ -377,8 +395,9 @@ body {
 }
 
 .send-btn:hover {
-    background: #764ba2;
+    background: var(--accent-coral);
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 211, 189, 0.3);
 }
 
 .send-btn:active {
@@ -498,8 +517,8 @@ body {
 }
 
 .emoji-btn:hover {
-    border-color: #667eea;
-    background: #f0f4ff;
+    border-color: var(--accent-green);
+    background: rgba(184, 230, 213, 0.15);
 }
 
 /* 主页样式 */
@@ -510,8 +529,8 @@ body {
 }
 
 .hero-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-coral) 100%);
+    color: var(--text-dark);
     padding: 60px 20px;
     text-align: center;
 }
@@ -556,22 +575,23 @@ body {
 
 .feature-card h3 {
     margin-bottom: 10px;
-    color: #667eea;
+    color: var(--text-dark);
 }
 
 .btn-feature {
     display: inline-block;
     margin-top: 15px;
     padding: 8px 20px;
-    background: #667eea;
-    color: white;
+    background: var(--accent-green);
+    color: var(--text-dark);
     text-decoration: none;
     border-radius: 6px;
     transition: background 0.3s;
+    font-weight: 600;
 }
 
 .btn-feature:hover {
-    background: #764ba2;
+    background: var(--accent-coral);
 }
 
 .quick-stats {
@@ -605,7 +625,7 @@ body {
     display: block;
     font-size: 32px;
     font-weight: 600;
-    color: #667eea;
+    color: var(--accent-green);
 }
 
 /* 底部导航栏 */
@@ -634,7 +654,7 @@ body {
 }
 
 .nav-item.active {
-    color: #667eea;
+    color: var(--accent-green);
 }
 
 .nav-item .icon {
