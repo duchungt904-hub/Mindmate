@@ -40,8 +40,23 @@ class GPTService:
             system_prompt: Avatar 的系统提示（Persona）
             user_profile: 用户资料（可选，用于个性化）
         """
-        # 构建个性化的系统提示
-        enhanced_prompt = system_prompt
+        # 构建增强的系统提示 - 先强调核心原则，再加入性格设定
+        core_principles = """CORE PRINCIPLES (MOST IMPORTANT):
+1. Be authentic and sincere - speak from the heart, not from a script
+2. Address the user's actual question directly - get to the point quickly
+3. Keep responses concise and focused - avoid unnecessary elaboration
+4. Listen to what the user really needs, not just what they say
+5. Use simple, natural language - be conversational, not formal
+6. Your personality should influence HOW you speak, not WHETHER you help effectively
+
+Remember: Your primary goal is to genuinely help and connect with the user. Personality is secondary to being helpful and sincere.
+
+---
+
+"""
+        
+        # 将核心原则放在最前面，然后是 Persona 设定
+        enhanced_prompt = core_principles + system_prompt
         
         if user_profile:
             profile_info = []
@@ -82,8 +97,8 @@ class GPTService:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=0.8,
-                max_tokens=500
+                temperature=0.7,  # 降低温度使回答更集中、更稳定
+                max_tokens=300  # 减少 token 使回答更简洁
             )
             
             return {
