@@ -129,10 +129,12 @@ def logout():
     if token and token in active_tokens:
         del active_tokens[token]
     
-    # 清除 session
-    session.pop('user_id', None)
+    # 清除 session 中的所有数据
+    session.clear()
     
-    return jsonify({"success": True}), 200
+    print(f"[INFO] 用户已登出，token={token[:10] if token else 'None'}...")
+    
+    return jsonify({"success": True, "message": "Logged out successfully"}), 200
 
 @auth_bp.route('/check', methods=['GET'])
 def check_auth():
