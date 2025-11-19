@@ -79,24 +79,32 @@ function showMessage(text, type) {
 // 登出功能
 function logout() {
     if (confirm('Are you sure you want to log out?')) {
+        // 使用 fetchWithAuth 确保正确携带 token
+        const token = localStorage.getItem('auth_token');
+        
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         fetch('/api/auth/logout', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: headers
         }).then(response => {
-            if (response.ok) {
-                // 清除 session
-                sessionStorage.clear();
-                // 清除本地存储
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('user_id');
-                localStorage.removeItem('username');
-                // 跳转到登录页
-                window.location.href = '/login';
-            } else {
-                alert('Logout failed, please try again');
-            }
+            // 不管成功失败，都清除本地数据并跳转
+            console.log('Logout response status:', response.status);
+            
+            // 清除 session
+            sessionStorage.clear();
+            // 清除本地存储
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            // 跳转到登录页
+            window.location.href = '/login';
         }).catch(error => {
             console.error('Logout error:', error);
             // 即使错误也强制跳转到登录页
