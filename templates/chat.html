@@ -267,8 +267,8 @@ async function init() {
     } else {
         document.getElementById('avatarInfo').innerHTML = `
             <div style="text-align: center; width: 100%;">
-                <p style="color: #e74c3c;">⚠️ 请先创建你的 Avatar！</p>
-                <a href="/avatar" class="btn-primary" style="display: inline-block; margin-top: 10px;">去创建</a>
+                <p style="color: #e74c3c;">⚠️ Please create an Avatar first!</p>
+                <a href="/avatar" class="btn-primary" style="display: inline-block; margin-top: 10px;">Create Now</a>
             </div>
         `;
         return;
@@ -463,7 +463,7 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
         } else {
             chatHistory.push({
                 sender: 'ai',
-                message: '抱歉，我现在无法回复。',
+                message: 'Sorry, I cannot reply right now.',
                 timestamp: new Date().toISOString()
             });
         }
@@ -473,7 +473,7 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
         chatHistory.pop();
         chatHistory.push({
             sender: 'ai',
-            message: '网络错误，请重试。',
+            message: 'Network error, please try again.',
             timestamp: new Date().toISOString()
         });
         renderMessages();

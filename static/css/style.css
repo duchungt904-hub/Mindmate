@@ -338,7 +338,7 @@ body {
 
 .chat-input-container {
     position: fixed;
-    bottom: 70px;
+    bottom: 85px;  /* 增加高度避免被导航栏遮挡 */
     left: 0;
     right: 0;
     padding: 15px;
@@ -666,7 +666,7 @@ body {
     
     /* 聊天界面移动端优化 */
     .chat-input-container {
-        bottom: 60px;
+        bottom: 75px;  /* 移动端也需要高一点避免遮挡 */
         padding: 10px;
     }
     

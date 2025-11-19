@@ -6,7 +6,7 @@
 <div class="page-container avatars-page">
     <div class="page-header">
         <h1>My AI Avatars</h1>
-        <p class="subtitle">管理你的 AI 伙伴</p>
+        <p class="subtitle">Manage Your AI Companions</p>
     </div>
 
     <!-- Avatar 列表 -->
@@ -519,8 +519,8 @@ function renderAvatars() {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="icon">🤖</div>
-                <h3>还没有 Avatar</h3>
-                <p>点击右下角按钮创建你的第一个 AI 伙伴吧！</p>
+                <h3>No Avatars Yet</h3>
+                <p>Click the button below to create your first AI companion!</p>
             </div>
         `;
         return;
@@ -607,7 +607,7 @@ function editAvatar(avatarId) {
 
 // 删除 Avatar
 async function deleteAvatar(avatarId) {
-    if (!confirm('确定要删除这个 Avatar 吗？相关的聊天记录也会被删除。')) {
+    if (!confirm('Are you sure you want to delete this Avatar? Related chat history will also be deleted.')) {
         return;
     }
     
