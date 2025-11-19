@@ -34,7 +34,7 @@
                 <!-- Avatar 名称 -->
                 <div class="form-group">
                     <label for="avatarName">Avatar Name *</label>
-                    <input type="text" id="avatarName" name="avatar_name" placeholder="给你的 AI 伙伴起个名字" required>
+                    <input type="text" id="avatarName" name="avatar_name" placeholder="Give your AI companion a name" required>
                 </div>
 
                 <!-- 外观类型 -->
@@ -45,8 +45,8 @@
                             <input type="radio" name="appearance_type" value="q_character" required>
                             <div class="card-content">
                                 <div class="preview-icon">🎨</div>
-                                <span>Q Version</span>
-                                <small>可爱 Q 版人物</small>
+                                <span>Cute Character</span>
+                                <small>Adorable cartoon style</small>
                             </div>
                         </label>
                         <label class="radio-card">
@@ -54,7 +54,7 @@
                             <div class="card-content">
                                 <div class="preview-icon">🐾</div>
                                 <span>Cute Animal</span>
-                                <small>可爱动物形象</small>
+                                <small>Lovely animal avatar</small>
                             </div>
                         </label>
                         <label class="radio-card">
@@ -62,7 +62,7 @@
                             <div class="card-content">
                                 <div class="preview-icon">🖼️</div>
                                 <span>Custom</span>
-                                <small>自定义图片</small>
+                                <small>Upload your own image</small>
                             </div>
                         </label>
                     </div>
@@ -72,14 +72,14 @@
                 <div class="form-group" id="customImageGroup" style="display: none;">
                     <label for="customImage">Upload Custom Image</label>
                     <input type="file" id="customImage" name="custom_image" accept="image/*">
-                    <small>支持 PNG, JPG, GIF, WebP 等格式</small>
+                    <small>Supports PNG, JPG, GIF, WebP formats</small>
                 </div>
 
                 <!-- 性格类型 -->
                 <div class="form-group">
                     <label for="personaSelect">Personality *</label>
                     <select id="personaSelect" name="persona_id" required>
-                        <option value="">-- 选择性格 --</option>
+                        <option value="">-- Select Personality --</option>
                     </select>
                 </div>
 
@@ -87,7 +87,7 @@
                 <div class="form-group" id="customPersonaGroup" style="display: none;">
                     <label for="customPersona">Custom Personality Description</label>
                     <textarea id="customPersona" name="custom_persona" rows="4" 
-                              placeholder="描述你希望 AI 伙伴的性格和说话风格..."></textarea>
+                              placeholder="Describe your AI companion's personality and communication style..."></textarea>
                 </div>
 
                 <!-- 提交按钮 -->

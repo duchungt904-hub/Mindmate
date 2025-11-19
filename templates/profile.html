@@ -9,15 +9,15 @@
     <form id="profileForm">
         <div class="form-group">
             <label for="name">Name</label>
-            <input type="text" id="name" name="name" value="{{ profile.name or '' }}" placeholder="请输入你的名字">
+            <input type="text" id="name" name="name" value="{{ profile.name or '' }}" placeholder="Enter your name">
         </div>
         
         <div class="form-group">
             <label for="gender">Gender</label>
             <select id="gender" name="gender">
-                <option value="" {% if not profile.gender %}selected{% endif %}>不愿透露</option>
-                <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>男</option>
-                <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>女</option>
+                <option value="" {% if not profile.gender %}selected{% endif %}>Prefer not to say</option>
+                <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
             </select>
         </div>
         
@@ -27,17 +27,17 @@
         </div>
         
         <div class="form-group">
-            <label for="goal">Goal / 座右铭</label>
-            <input type="text" id="goal" name="goal" placeholder="To have a happy day~" value="{{ profile.goal or '' }}">
+            <label for="goal">Goal / Motto</label>
+            <input type="text" id="goal" name="goal" placeholder="What's your life motto?" value="{{ profile.goal or '' }}">
         </div>
         
         <div class="form-group">
-            <label for="self_description">自我描述</label>
-            <textarea id="self_description" name="self_description" rows="4" placeholder="描述一下你自己的性格或身份...">{{ profile.self_description or '' }}</textarea>
+            <label for="self_description">Self Description</label>
+            <textarea id="self_description" name="self_description" rows="4" placeholder="Please describe yourself, your personality or identity...">{{ profile.self_description or '' }}</textarea>
         </div>
         
-        <button type="submit" class="btn-primary">保存</button>
-        <button type="button" class="btn-secondary" onclick="logout()" style="margin-left: 10px;">登出</button>
+        <button type="submit" class="btn-primary">Save</button>
+        <button type="button" class="btn-secondary" onclick="logout()" style="margin-left: 10px;">Log Out</button>
     </form>
     
     <div id="message" class="message"></div>
