@@ -4,7 +4,7 @@ from flask import Flask, render_template, session, redirect, url_for, request, j
 from flask_cors import CORS
 from dotenv import load_dotenv
 from database import Database
-from routes import auth_bp, profile_bp, avatar_bp, chat_bp, mood_bp
+from routes import auth_bp, profile_bp, avatar_bp, chat_bp, mood_bp, demo_bp
 
 # 加载环境变量
 load_dotenv()
@@ -49,6 +49,7 @@ app.register_blueprint(profile_bp)
 app.register_blueprint(avatar_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(mood_bp)
+app.register_blueprint(demo_bp)
 
 # Token 认证中间件
 @app.before_request
@@ -57,7 +58,7 @@ def check_token_auth():
     from routes.auth import get_token_from_request, verify_token
     
     # 跳过公开路由（不包括需要认证的页面）
-    public_routes = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/static', '/test-login', '/test', '/']
+    public_routes = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/api/demo', '/static', '/test-login', '/test', '/demo', '/']
     if any(request.path.startswith(route) for route in public_routes):
         # 但 / 需要特殊处理，不能直接跳过
         if request.path == '/':
@@ -150,6 +151,11 @@ def calendar():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     return render_template('calendar.html', show_nav=True, active_page='calendar')
+
+@app.route('/demo')
+def demo():
+    """演示模式登录页面"""
+    return render_template('demo.html')
 
 @app.route('/test-login')
 def test_login():
