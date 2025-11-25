@@ -486,7 +486,7 @@ async function loadPersonas() {
 // 填充 Persona 下拉框
 function populatePersonaSelect() {
     const select = document.getElementById('personaSelect');
-    select.innerHTML = '<option value="">-- 选择性格 --</option>';
+    select.innerHTML = '<option value="">-- Select Personality --</option>';
     
     personas.forEach(persona => {
         const option = document.createElement('option');
