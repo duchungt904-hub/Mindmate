@@ -91,6 +91,11 @@ Remember: You are a REAL FRIEND, not a poetry writer or a customer service bot. 
         # 将核心原则放在最前面，然后是 Persona 设定
         enhanced_prompt = core_principles + system_prompt
         
+        # 添加当前日期和时间信息
+        from datetime import datetime
+        current_datetime = datetime.now()
+        date_info = f"\n\nCURRENT DATE & TIME:\nToday is {current_datetime.strftime('%A, %B %d, %Y')} at {current_datetime.strftime('%I:%M %p')}\nUse this information when discussing time-related topics.\n"
+        
         if user_profile:
             profile_info = []
             if user_profile.get('name'):
@@ -109,6 +114,9 @@ Remember: You are a REAL FRIEND, not a poetry writer or a customer service bot. 
             if profile_info:
                 enhanced_prompt += "\n\n用户信息：\n" + "\n".join(profile_info)
                 enhanced_prompt += "\n\n请在对话中适当地参考这些信息，让对话更加个性化和贴心。"
+        
+        # 添加日期信息（所有情况都添加）
+        enhanced_prompt += date_info
         
         # 构建消息列表
         messages = [
