@@ -1,69 +1,85 @@
-# MindMate 应用
+# MindMate 🧠💬
 
-基于 Python 和 Flask 的 AI 聊天伙伴应用，支持个性化 Avatar、情绪追踪等功能。
+An AI-powered mental wellness companion built with Python and Flask. Features personalized AI avatars, mood tracking, and intelligent conversations.
 
-## 功能特性
+---
 
-- ✅ 用户认证（注册/登录）
-- ✅ 个人资料管理
-- ✅ 自定义 AI Avatar（外观和性格）
-- ✅ GPT 驱动的智能聊天
-- ✅ 日历心情追踪（手动和自动）
-- ✅ 响应式移动端界面
+## 🚀 **Try the Live Demo**
 
-## 技术栈
+### **👉 [Launch Demo Now](https://mindmate-6a4h.onrender.com/demo) 👈**
 
-- **后端**: Python, Flask
-- **数据库**: SQLite
-- **AI**: OpenAI GPT API
-- **前端**: HTML, CSS, JavaScript
+**Demo Credentials:**
+- Username: `test`
+- Password: `test`
 
-## 快速开始
+*Note: Demo data is automatically cleared on each login.*
 
-### 1. 安装依赖
+---
+
+## ✨ Features
+
+- ✅ User Authentication (Register/Login)
+- ✅ Personal Profile Management
+- ✅ Customizable AI Avatars (Appearance & Personality)
+- ✅ GPT-Powered Intelligent Chat
+- ✅ Calendar-Based Mood Tracking (Manual & Auto)
+- ✅ Responsive Mobile Interface
+
+## 🛠️ Tech Stack
+
+- **Backend**: Python, Flask
+- **Database**: SQLite
+- **AI**: OpenAI GPT API (DeepSeek compatible)
+- **Frontend**: HTML, CSS, JavaScript
+- **Deployment**: Render.com
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 配置环境变量
+### 2. Configure Environment Variables
 
-复制 `.env.example` 为 `.env` 并填写配置：
+Copy `.env.example` to `.env` and fill in your configuration:
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件：
+Edit the `.env` file:
 ```
 OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_BASE_URL=https://api.openai.com/v1  # Or DeepSeek API URL
 SECRET_KEY=your_secret_key_here
 DATABASE_PATH=mindmate.db
 ```
 
-### 3. 初始化数据库
+### 3. Initialize Database
 
 ```bash
 python database/db_manager.py
 ```
 
-### 4. 运行应用
+### 4. Run the Application
 
 ```bash
 python app.py
 ```
 
-应用将在 http://localhost:5000 启动。
+The app will start at http://localhost:5000
 
-## 使用说明
+## 📖 How to Use
 
-1. **注册账号**: 访问 `/register` 创建新账号
-2. **完善资料**: 在 `/profile` 填写个人信息
-3. **配置 Avatar**: 在 `/avatar` 选择外观和性格
-4. **开始聊天**: 在 `/chat` 与 AI 伙伴对话
-5. **追踪心情**: 在 `/calendar` 查看和记录心情
+1. **Register Account**: Visit `/register` to create a new account
+2. **Complete Profile**: Fill in personal information at `/profile`
+3. **Configure Avatar**: Choose appearance and personality at `/avatar`
+4. **Start Chatting**: Talk with your AI companion at `/chat`
+5. **Track Mood**: View and record your mood at `/calendar`
 
-## 项目结构
+## 📁 Project Structure
 
 ```
 Mindmate_Qoder2/
@@ -108,39 +124,52 @@ Mindmate_Qoder2/
     └── uploads/         # 用户上传文件
 ```
 
-## API 端点
+## 🔌 API Endpoints
 
-### 认证
-- `POST /api/auth/register` - 用户注册
-- `POST /api/auth/login` - 用户登录
-- `POST /api/auth/logout` - 用户登出
-- `GET /api/auth/check` - 检查登录状态
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/check` - Check login status
 
-### 个人资料
-- `GET /api/profile/` - 获取用户资料
-- `POST /api/profile/` - 更新用户资料
+### Profile
+- `GET /api/profile/` - Get user profile
+- `POST /api/profile/` - Update user profile
 
 ### Avatar
-- `GET /api/avatar/personas` - 获取所有 Persona
-- `GET /api/avatar/` - 获取用户 Avatar 配置
-- `POST /api/avatar/` - 保存 Avatar 配置
+- `GET /api/avatar/personas` - Get all personalities
+- `GET /api/avatar/` - Get user avatar configuration
+- `POST /api/avatar/` - Save avatar configuration
+- `GET /api/avatar/list` - List user's avatars
 
-### 聊天
-- `GET /api/chat/history` - 获取聊天历史
-- `POST /api/chat/send` - 发送消息
+### Chat
+- `GET /api/chat/history` - Get chat history
+- `POST /api/chat/send` - Send message
 
-### 心情
-- `POST /api/mood/set` - 手动设置心情
-- `POST /api/mood/auto-analyze` - 自动分析心情
-- `GET /api/mood/get` - 获取某天的心情
-- `GET /api/mood/month` - 获取某月的心情
+### Mood
+- `POST /api/mood/set` - Manually set mood
+- `POST /api/mood/auto-analyze` - Auto-analyze mood from chat
+- `GET /api/mood/get` - Get mood for a specific day
+- `GET /api/mood/month` - Get mood calendar for a month
 
-## 注意事项
+### Demo
+- `POST /api/demo/clear` - Clear demo account data
+- `GET /api/demo/status` - Check demo account status
 
-- 需要有效的 OpenAI API Key
-- 建议在生产环境中更改 SECRET_KEY
-- 上传的文件存储在 `static/uploads/` 目录
+## ⚠️ Important Notes
 
-## License
+- Requires a valid OpenAI API Key or DeepSeek API Key
+- Change `SECRET_KEY` in production environment
+- Uploaded files are stored in `static/uploads/` directory
+- Future dates are disabled in mood calendar (only today and past dates)
+- AI responds primarily in English for better practice
+
+## 🌐 Live Deployment
+
+**Production URL**: https://mindmate-6a4h.onrender.com
+
+**Demo URL**: https://mindmate-6a4h.onrender.com/demo
+
+## 📝 License
 
 MIT
